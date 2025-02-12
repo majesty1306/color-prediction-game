@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocket Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: black; color: white; font-family: Arial, sans-serif; }
+        canvas { display: block; background: #111; }
+        #scoreboard { position: absolute; top: 10px; left: 10px; font-size: 20px; }
+    </style>
+</head>
+<body>
+    <div id="scoreboard">Score: <span id="score">0</span> | High Score: <span id="highscore">0</span></div>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let rocket = { x: canvas.width / 2, y: canvas.height - 100, width: 50, height: 50, speed: 5, dx: 0, dy: 0 };
+        let bullets = [];
+        let obstacles = [];
+        let score = 0;
+        let highScore = localStorage.getItem("highscore") || 0;
+        document.getElementById("highscore").textContent = highScore;
+        let gameOver = false;
+
+        function drawRocket() {
+            ctx.fillStyle = "red";
+            ctx.fillRect(rocket.x, rocket.y, rocket.width, rocket.height);
+        }
+
+        function drawBullets() {
+            ctx.fillStyle = "yellow";
+            bullets.forEach((bullet, index) => {
+                bullet.y -= 7;
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                if (bullet.y < 0) bullets.splice(index, 1);
+            });
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = "gray";
+            obstacles.forEach((obs, index) => {
+                obs.y += 3;
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                if (obs.y > canvas.height) obstacles.splice(index, 1);
+                if (
+                    rocket.x < obs.x + obs.width &&
+                    rocket.x + rocket.width > obs.x &&
+                    rocket.y < obs.y + obs.height &&
+                    rocket.y + rocket.height > obs.y
+                ) {
+                    gameOver = true;
+                }
+            });
+        }
+
+        function detectCollisions() {
+            bullets.forEach((bullet, bIndex) => {
+                obstacles.forEach((obs, oIndex) => {
+                    if (
+                        bullet.x < obs.x + obs.width &&
+                        bullet.x + bullet.width > obs.x &&
+                        bullet.y < obs.y + obs.height &&
+                        bullet.y + bullet.height > obs.y
+                    ) {
+                        bullets.splice(bIndex, 1);
+                        obstacles.splice(oIndex, 1);
+                        score += 10;
+                        document.getElementById("score").textContent = score;
+                        if (score > highScore) {
+                            highScore = score;
+                            localStorage.setItem("highscore", highScore);
+                            document.getElementById("highscore").textContent = highScore;
+                        }
+                    }
+                });
+            });
+        }
+
+        function updateGame() {
+            if (gameOver) {
+                alert("Game Over! Your score: " + score);
+                document.location.reload();
+                return;
+            }
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            rocket.x += rocket.dx;
+            rocket.y += rocket.dy;
+            drawRocket();
+            drawBullets();
+            drawObstacles();
+            detectCollisions();
+            requestAnimationFrame(updateGame);
+        }
+
+        setInterval(() => {
+            obstacles.push({ x: Math.random() * canvas.width, y: 0, width: 50, height: 50 });
+        }, 1000);
+
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft") rocket.dx = -rocket.speed;
+            if (e.key === "ArrowRight") rocket.dx = rocket.speed;
+            if (e.key === "ArrowUp") rocket.dy = -rocket.speed;
+            if (e.key === "ArrowDown") rocket.dy = rocket.speed;
+        });
+
+        window.addEventListener("keyup", (e) => {
+            if (["ArrowLeft", "ArrowRight"].includes(e.key)) rocket.dx = 0;
+            if (["ArrowUp", "ArrowDown"].includes(e.key)) rocket.dy = 0;
+        });
+
+        window.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            bullets.push({ x: rocket.x + 20, y: rocket.y, width: 10, height: 20 });
+        });
+
+        canvas.addEventListener("touchstart", (e) => {
+            bullets.push({ x: rocket.x + 20, y: rocket.y, width: 10, height: 20 });
+        });
+
+        updateGame();
+    </script>
+</body>
+</html>
