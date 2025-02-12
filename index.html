@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Prediction Game</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .color-btn {
+            padding: 15px;
+            margin: 10px;
+            font-size: 20px;
+            border: none;
+            cursor: pointer;
+            color: white;
+        }
+        .red { background-color: red; }
+        .green { background-color: green; }
+        .blue { background-color: blue; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Color Prediction Game</h1>
+        <p>Pick a color and see if you can predict the next one!</p>
+        <button class="color-btn red" onclick="predictColor('Red')">Red</button>
+        <button class="color-btn green" onclick="predictColor('Green')">Green</button>
+        <button class="color-btn blue" onclick="predictColor('Blue')">Blue</button>
+        <h2 id="result"></h2>
+    </div>
+    <script>
+        function predictColor(selectedColor) {
+            const colors = ['Red', 'Green', 'Blue'];
+            const predictedColor = colors[Math.floor(Math.random() * colors.length)];
+            document.getElementById('result').innerText = `You chose ${selectedColor}. Predicted color: ${predictedColor}`;
+        }
+    </script>
+</body>
+</html>
